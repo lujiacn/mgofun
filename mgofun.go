@@ -28,7 +28,7 @@ func NewMgoFun(s *mgo.Session, dbName string, model interface{}) *MgoFun {
 }
 
 // Collection conduct mgo.Collection
-func collection(s *mgo.Session, dbName string, m interface{}) *mgo.Collection {
+func Collection(s *mgo.Session, dbName string, m interface{}) *mgo.Collection {
 	var c string
 	switch m.(type) {
 	case string:
@@ -49,10 +49,7 @@ func (m *MgoFun) Save() error {
 	x := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedAt")
 	x.Set(reflect.ValueOf(time.Now()))
 	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // Remove is softe delete
@@ -63,10 +60,7 @@ func (m *MgoFun) Remove() error {
 	y := reflect.ValueOf(m.model).Elem().FieldByName("RemovedAt")
 	y.Set(reflect.ValueOf(time.Now()))
 	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 //findQ conduct mgo.Query
@@ -113,29 +107,33 @@ func (m *MgoFun) Count() int64 {
 
 //---------retrieve functions
 // FindAll except removed, i is interface address
-func (m *MgoFun) FindAll(i interface{}) {
+func (m *MgoFun) FindAll(i interface{}) error {
 	query := m.findQ()
-	query.All(i)
+	err := query.All(i)
+	return err
 }
 
 //Get will retrieve by _id
-func (m *MgoFun) Get() {
+func (m *MgoFun) Get() error {
 	query := m.findByIdQ()
-	query.One(m.model)
+	err := query.One(m.model)
+	return err
 }
 
 //GetByQ get first one based on query, model will be updated
-func (m *MgoFun) GetByQ() {
+func (m *MgoFun) GetByQ() error {
 	query := m.findQ()
-	query.One(m.model)
+	err := query.One(m.model)
+	return err
 }
 
 //Select query and select columns
-func (m *MgoFun) FindWithSelect(cols []string, i interface{}) {
+func (m *MgoFun) FindWithSelect(cols []string, i interface{}) error {
 	sCols := bson.M{}
 	for _, v := range cols {
 		sCols[v] = 1
 	}
 	query := m.findQ().Select(sCols)
-	query.All(i)
+	err := query.All(i)
+	return err
 }
