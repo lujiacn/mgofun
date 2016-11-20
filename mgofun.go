@@ -1,11 +1,11 @@
 package mgofun
 
 import (
-	"reflect"
-	"time"
-
+	"errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"reflect"
+	"time"
 )
 
 //MgoFun wrap all common functions
@@ -14,7 +14,7 @@ type MgoFun struct {
 	session    *mgo.Session
 	collection *mgo.Collection
 	Query      bson.M
-	Sort       string
+	Sort       []string
 	Skip       int
 	Limit      int
 }
@@ -22,7 +22,7 @@ type MgoFun struct {
 //NewMgoFun initiate with input model and mgo session
 func NewMgoFun(s *mgo.Session, dbName string, model interface{}) *MgoFun {
 	mgoFun := &MgoFun{model: model, session: s}
-	collection := collection(s, dbName, model)
+	collection := Collection(s, dbName, model)
 	mgoFun.collection = collection
 	return mgoFun
 }
@@ -55,12 +55,28 @@ func (m *MgoFun) Save() error {
 // Remove is softe delete
 func (m *MgoFun) Remove() error {
 	id := reflect.ValueOf(m.model).Elem().FieldByName("Id")
+	if !id.IsValid() {
+		return errors.New("No Id defined in model")
+	}
+
 	x := reflect.ValueOf(m.model).Elem().FieldByName("IsRemoved")
-	x.Set(reflect.ValueOf(true))
+	if x.IsValid() {
+		x.Set(reflect.ValueOf(true))
+	}
+
 	y := reflect.ValueOf(m.model).Elem().FieldByName("RemovedAt")
+	if !y.IsValid() {
+		return errors.New("RemovedAt not defined in model")
+	}
+
 	y.Set(reflect.ValueOf(time.Now()))
 	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
 	return err
+}
+
+//GenQuery export mgo.Query for further usage
+func (m *MgoFun) Q() *mgo.Query {
+	return m.findQ()
 }
 
 //findQ conduct mgo.Query
@@ -75,8 +91,8 @@ func (m *MgoFun) findQ() *mgo.Query {
 
 	query = m.collection.Find(m.Query)
 	//sort
-	if m.Sort != "" {
-		query = query.Sort(m.Sort)
+	if m.Sort != nil {
+		query = query.Sort(m.Sort...)
 	} else {
 		query = query.Sort("-created_at", "-updated_at")
 	}
@@ -128,7 +144,7 @@ func (m *MgoFun) GetByQ() error {
 }
 
 //Select query and select columns
-func (m *MgoFun) FindWithSelect(cols []string, i interface{}) error {
+func (m *MgoFun) FindWithSelect(i interface{}, cols []string) error {
 	sCols := bson.M{}
 	for _, v := range cols {
 		sCols[v] = 1
