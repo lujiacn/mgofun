@@ -2,10 +2,11 @@ package mgofun
 
 import (
 	"errors"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"reflect"
 	"time"
+
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //MgoFun wrap all common functions
@@ -151,5 +152,11 @@ func (m *MgoFun) FindWithSelect(i interface{}, cols []string) error {
 	}
 	query := m.findQ().Select(sCols)
 	err := query.All(i)
+	return err
+}
+
+//Distinct
+func (m *MgoFun) Distinct(key string, i interface{}) error {
+	err := m.findQ().Distinct(key, i)
 	return err
 }
