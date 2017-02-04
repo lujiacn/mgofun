@@ -56,8 +56,6 @@ func (m *MgoFun) Save() error {
 //General Save method
 func (m *MgoFun) SaveWithoutTime() error {
 	id := reflect.ValueOf(m.model).Elem().FieldByName("Id")
-	// x := reflect.ValueOf(m.model).Elem().FieldByName("UpdatedAt")
-	// x.Set(reflect.ValueOf(time.Now()))
 	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
 	return err
 }
