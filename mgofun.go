@@ -101,7 +101,7 @@ func (m *MgoFun) findQ() *mgo.Query {
 			m.Query["$and"] = append(v.([]interface{}), rmQ...)
 		}
 	} else {
-		m.Query["$and"] = rmQ
+		m.Query = bson.M{"$and": rmQ}
 	}
 
 	query = m.collection.Find(m.Query)
