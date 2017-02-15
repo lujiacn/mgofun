@@ -91,7 +91,7 @@ func (m *MgoFun) Q() *mgo.Query {
 func (m *MgoFun) findQ() *mgo.Query {
 	var query *mgo.Query
 	//do not query removed value
-	rmQ := []interface{}{bson.M{"is_removed": bson.M{"$ne": true}}, bson.M{"isRemoved": bson.M{"$ne": true}}}
+	rmQ := []interface{}{bson.M{"is_removed": bson.M{"$ne": true}}, bson.M{"IsRemoved": bson.M{"$ne": true}}}
 	if m.Query != nil {
 		if v, found := m.Query["$and"]; !found {
 			m.Query["$and"] = rmQ
@@ -107,7 +107,7 @@ func (m *MgoFun) findQ() *mgo.Query {
 	if m.Sort != nil {
 		query = query.Sort(m.Sort...)
 	} else {
-		query = query.Sort("-created_at", "-createdAt", "-updatedAt", "-updated_at")
+		query = query.Sort("-created_at", "-CreatedAt", "-UpdatedAt", "-updated_at")
 	}
 	//skip
 	if m.Skip != 0 {

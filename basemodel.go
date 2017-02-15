@@ -21,13 +21,13 @@ type BaseModel struct {
 
 // Camel case
 // BaseModel to be emmbered to other struct as audit trail perpurse
-type BaseModelCamel struct {
+type BaseMod struct {
 	Id        bson.ObjectId `bson:"_id,omitempty"`
-	CreatedAt time.Time     `bson:"createdAt,omitempty"`
-	CreatedBy string        `bson:"createdBy,omitempty"`
-	UpdatedAt time.Time     `bson:"updatedAt,omitempty"`
-	UpdatedBy string        `bson:"updatedBy,omitempty"`
-	IsRemoved bool          `bson:"isRemoved,omitempty"`
-	RemovedAt time.Time     `bson:"removedAt,omitempty"`
-	RemovedBy string        `bson:"removedBy,omitempty"`
+	CreatedAt time.Time     `bson:"CreatedAt,omitempty"`
+	CreatedBy string        `bson:"CreatedBy,omitempty"`
+	UpdatedAt time.Time     `bson:"UpdatedAt,omitempty"`
+	UpdatedBy string        `bson:"UpdatedBy,omitempty"`
+	IsRemoved bool          `bson:"IsRemoved,omitempty"`
+	RemovedAt time.Time     `bson:"RemovedAt,omitempty"`
+	RemovedBy string        `bson:"RemovedBy,omitempty"`
 }
