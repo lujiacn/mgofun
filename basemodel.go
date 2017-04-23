@@ -31,3 +31,11 @@ type BaseMod struct {
 	RemovedAt time.Time     `bson:"RemovedAt,omitempty"`
 	RemovedBy string        `bson:"RemovedBy,omitempty"`
 }
+
+//ChangeLog
+type ChangeLog struct {
+	BaseMod      `bson:",inline"`
+	ModelName    string      `bson:"ModelName,omitempty"`
+	ModelValue   interface{} `bson:"ModelValue,omitempty"`
+	ChangeReason string      `bson:"ChangeReason,omitempty"`
+}

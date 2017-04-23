@@ -39,7 +39,10 @@ func TestFuncsSave(t *testing.T) {
 	op := NewMgoFun(s, dbName, user)
 	op.Save()
 	op = NewMgoFun(s, dbName, user2)
-	op.Save()
+	err = op.Save()
+	if err != nil {
+		fmt.Println("Err during save: ", err)
+	}
 
 }
 
@@ -56,13 +59,13 @@ func TestFindAll(t *testing.T) {
 	// for FindAll
 	var users []*User
 	op.FindAll(&users)
-	op.Query = bson.M{"name": "Jia"}
+	op.Query = bson.M{"name": "Jack"}
 	op.GetByQ()
 	fmt.Println(user)
 
 	// query, limit, skip
-	op.Sort = "-updated_at"
+	op.Sort = []string{"-updated_at"}
 	op.Limit = 10
 	op.FindAll(&users)
-	fmt.Println(users[0].UpdatedAt)
+	fmt.Println(users)
 }

@@ -11,25 +11,34 @@ import (
 
 //MgoFun wrap all common functions
 type MgoFun struct {
-	model      interface{}
-	session    *mgo.Session
-	collection *mgo.Collection
-	Query      bson.M
-	Sort       []string
-	Skip       int
-	Limit      int
+	model         interface{}
+	session       *mgo.Session
+	collection    *mgo.Collection
+	logCollection *mgo.Collection // for change log
+	Query         bson.M
+	Sort          []string
+	Skip          int
+	Limit         int
 }
 
 //NewMgoFun initiate with input model and mgo session
 func NewMgoFun(s *mgo.Session, dbName string, model interface{}) *MgoFun {
 	mgoFun := &MgoFun{model: model, session: s}
 	collection := Collection(s, dbName, model)
+	logCollection := Collection(s, dbName, "ChangeLog")
+	mgoFun.logCollection = logCollection // for change log
 	mgoFun.collection = collection
 	return mgoFun
 }
 
 // Collection conduct mgo.Collection
 func Collection(s *mgo.Session, dbName string, m interface{}) *mgo.Collection {
+	cName := getModelName(m)
+	return s.DB(dbName).C(cName)
+}
+
+//getModelName reflect string name from model
+func getModelName(m interface{}) string {
 	var c string
 	switch m.(type) {
 	case string:
@@ -41,7 +50,18 @@ func Collection(s *mgo.Session, dbName string, m interface{}) *mgo.Collection {
 		}
 		c = typ.Name()
 	}
-	return s.DB(dbName).C(c)
+	return c
+}
+
+//Create
+func (m *MgoFun) Create() error {
+	//generate new object Id
+	id := reflect.ValueOf(m.model).Elem().FieldByName("Id")
+	id.Set(reflect.ValueOf(bson.NewObjectId()))
+	x := reflect.ValueOf(m.model).Elem().FieldByName("CreatedAt")
+	x.Set(reflect.ValueOf(time.Now()))
+	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
+	return err
 }
 
 //General Save method
@@ -58,6 +78,34 @@ func (m *MgoFun) SaveWithoutTime() error {
 	id := reflect.ValueOf(m.model).Elem().FieldByName("Id")
 	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
 	return err
+}
+
+//SaveWithLog will save old record to ChangeLog model
+func (m *MgoFun) SaveWithLog(oldRecord interface{}, by, reason string) error {
+	var err error
+	err = m.Save()
+	if err != nil {
+		return err
+	}
+	err = m.saveLog(oldRecord, by, reason)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//SaveWithLog
+func (m *MgoFun) saveLog(record interface{}, by, reason string) error {
+	cl := new(ChangeLog)
+	cl.Id = bson.NewObjectId()
+	cl.CreatedBy = by
+	cl.CreatedAt = time.Now()
+	cl.ChangeReason = reason
+	cl.ModelName = getModelName(record)
+	cl.ModelValue = record
+	_, err := m.logCollection.Upsert(bson.M{"_id": cl.Id}, bson.M{"$set": cl})
+	return err
+
 }
 
 // Remove is softe delete
