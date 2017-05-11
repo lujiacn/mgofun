@@ -35,7 +35,8 @@ type BaseMod struct {
 //ChangeLog
 type ChangeLog struct {
 	BaseMod      `bson:",inline"`
-	ModelName    string      `bson:"ModelName,omitempty"`
-	ModelValue   interface{} `bson:"ModelValue,omitempty"`
-	ChangeReason string      `bson:"ChangeReason,omitempty"`
+	ModelObjId   bson.ObjectId `bson:"ModelObjId,omitempty"`
+	ModelName    string        `bson:"ModelName,omitempty"`
+	ModelValue   interface{}   `bson:"ModelValue,omitempty"`
+	ChangeReason string        `bson:"ChangeReason,omitempty"`
 }

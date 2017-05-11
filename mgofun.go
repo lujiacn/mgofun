@@ -96,11 +96,14 @@ func (m *MgoFun) SaveWithLog(oldRecord interface{}, by, reason string) error {
 
 //SaveWithLog
 func (m *MgoFun) saveLog(record interface{}, by, reason string) error {
+	recordId := reflect.ValueOf(m.model).Elem().FieldByName("Id").Interface().(bson.ObjectId)
+
 	cl := new(ChangeLog)
 	cl.Id = bson.NewObjectId()
 	cl.CreatedBy = by
 	cl.CreatedAt = time.Now()
 	cl.ChangeReason = reason
+	cl.ModelObjId = recordId
 	cl.ModelName = getModelName(record)
 	cl.ModelValue = record
 	_, err := m.logCollection.Upsert(bson.M{"_id": cl.Id}, bson.M{"$set": cl})
