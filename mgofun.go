@@ -87,7 +87,7 @@ func (m *MgoFun) SaveWithLog(oldRecord interface{}, by, reason string) error {
 	if err != nil {
 		return err
 	}
-	err = m.saveLog(oldRecord, by, reason)
+	err = m.saveLog(oldRecord, by, reason, UPDATE)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (m *MgoFun) SaveWithLog(oldRecord interface{}, by, reason string) error {
 }
 
 //SaveWithLog
-func (m *MgoFun) saveLog(record interface{}, by, reason string) error {
+func (m *MgoFun) saveLog(record interface{}, by, reason string, operation int) error {
 	recordId := reflect.ValueOf(m.model).Elem().FieldByName("Id").Interface().(bson.ObjectId)
 
 	cl := new(ChangeLog)
@@ -103,11 +103,33 @@ func (m *MgoFun) saveLog(record interface{}, by, reason string) error {
 	cl.CreatedBy = by
 	cl.CreatedAt = time.Now()
 	cl.ChangeReason = reason
+	cl.Operation = operation
 	cl.ModelObjId = recordId
 	cl.ModelName = getModelName(record)
 	cl.ModelValue = record
 	_, err := m.logCollection.Upsert(bson.M{"_id": cl.Id}, bson.M{"$set": cl})
 	return err
+
+}
+
+func (m *MgoFun) HardRemoveWithLog(by, reason string) error {
+	id := reflect.ValueOf(m.model).Elem().FieldByName("Id")
+	if !id.IsValid() {
+		return errors.New("No Id defined in model")
+	}
+	// Save log
+	err := m.saveLog(m.model, by, reason, DELETE)
+	if err != nil {
+		return err
+	}
+
+	//hard delete record
+	err = m.collection.RemoveId(id.Interface())
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
