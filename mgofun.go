@@ -117,6 +117,7 @@ func (m *MgoFun) saveLog(operation, by, reason string) error {
 	return err
 }
 
+//HardRemoveWithLog
 func (m *MgoFun) HardRemoveWithLog(by, reason string) error {
 	id := reflect.ValueOf(m.model).Elem().FieldByName("Id")
 	if !id.IsValid() {
@@ -160,6 +161,7 @@ func (m *MgoFun) Remove() error {
 	return err
 }
 
+//RemoveWithLog
 func (m *MgoFun) RemoveWithLog(by, reason string) error {
 	err := m.saveLog(DELETE, by, reason)
 	if err != nil {
@@ -211,6 +213,7 @@ func (m *MgoFun) findQ() *mgo.Query {
 	return query
 }
 
+//findByIdQ
 func (m *MgoFun) findByIdQ() *mgo.Query {
 	var query *mgo.Query
 	id := reflect.ValueOf(m.model).Elem().FieldByName("Id").Interface()
