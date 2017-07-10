@@ -7,9 +7,8 @@ import (
 )
 
 const (
-	_      = iota
-	UPDATE = iota
-	DELETE = iota
+	UPDATE = "UPDATE"
+	DELETE = "DELETE"
 )
 
 // BaseModel to be emmbered to other struct as audit trail perpurse
@@ -30,6 +29,6 @@ type ChangeLog struct {
 	ModelObjId   bson.ObjectId `bson:"ModelObjId,omitempty"`
 	ModelName    string        `bson:"ModelName,omitempty"`
 	ModelValue   interface{}   `bson:"ModelValue,omitempty"`
-	Operation    int           `bson:"Operation,omitempty"`
+	Operation    string        `bson:"Operation,omitempty"`
 	ChangeReason string        `bson:"ChangeReason,omitempty"`
 }

@@ -27,7 +27,7 @@ func NewMgoFun(s *mgo.Session, dbName string, model interface{}) *MgoFun {
 	collection := Collection(s, dbName, model)
 	logCollection := Collection(s, dbName, "ChangeLog")
 	mgoFun.logCollection = logCollection // for change log
-	mgoFun.collection = collection
+	mgoFun.collection = collection       //current record collection
 	return mgoFun
 }
 
@@ -81,13 +81,13 @@ func (m *MgoFun) SaveWithoutTime() error {
 }
 
 //SaveWithLog will save old record to ChangeLog model
-func (m *MgoFun) SaveWithLog(oldRecord interface{}, by, reason string) error {
+func (m *MgoFun) SaveWithLog(operation, by, reason string) error {
 	var err error
 	err = m.Save()
 	if err != nil {
 		return err
 	}
-	err = m.saveLog(oldRecord, by, reason, UPDATE)
+	err = m.saveLog(UPDATE, by, reason)
 	if err != nil {
 		return err
 	}
@@ -95,8 +95,14 @@ func (m *MgoFun) SaveWithLog(oldRecord interface{}, by, reason string) error {
 }
 
 //SaveWithLog
-func (m *MgoFun) saveLog(record interface{}, by, reason string, operation int) error {
+func (m *MgoFun) saveLog(operation, by, reason string) error {
+	//read current record
+	var record interface{}
 	recordId := reflect.ValueOf(m.model).Elem().FieldByName("Id").Interface().(bson.ObjectId)
+	err := m.collection.FindId(recordId).One(&record)
+	if err != nil {
+		return err
+	}
 
 	cl := new(ChangeLog)
 	cl.Id = bson.NewObjectId()
@@ -107,9 +113,8 @@ func (m *MgoFun) saveLog(record interface{}, by, reason string, operation int) e
 	cl.ModelObjId = recordId
 	cl.ModelName = getModelName(record)
 	cl.ModelValue = record
-	_, err := m.logCollection.Upsert(bson.M{"_id": cl.Id}, bson.M{"$set": cl})
+	_, err = m.logCollection.Upsert(bson.M{"_id": cl.Id}, bson.M{"$set": cl})
 	return err
-
 }
 
 func (m *MgoFun) HardRemoveWithLog(by, reason string) error {
@@ -118,7 +123,7 @@ func (m *MgoFun) HardRemoveWithLog(by, reason string) error {
 		return errors.New("No Id defined in model")
 	}
 	// Save log
-	err := m.saveLog(m.model, by, reason, DELETE)
+	err := m.saveLog(DELETE, by, reason)
 	if err != nil {
 		return err
 	}
@@ -153,6 +158,19 @@ func (m *MgoFun) Remove() error {
 	y.Set(reflect.ValueOf(time.Now()))
 	_, err := m.collection.Upsert(bson.M{"_id": id.Interface()}, bson.M{"$set": m.model})
 	return err
+}
+
+func (m *MgoFun) RemoveWithLog(by, reason string) error {
+	err := m.saveLog(DELETE, by, reason)
+	if err != nil {
+		return err
+	}
+	err = m.Remove()
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 //GenQuery export mgo.Query for further usage
