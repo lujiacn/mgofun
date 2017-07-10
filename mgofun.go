@@ -81,7 +81,7 @@ func (m *MgoFun) SaveWithoutTime() error {
 }
 
 //SaveWithLog will save old record to ChangeLog model
-func (m *MgoFun) SaveWithLog(operation, by, reason string) error {
+func (m *MgoFun) SaveWithLog(by, reason string) error {
 	var err error
 	err = m.Save()
 	if err != nil {
@@ -111,7 +111,7 @@ func (m *MgoFun) saveLog(operation, by, reason string) error {
 	cl.ChangeReason = reason
 	cl.Operation = operation
 	cl.ModelObjId = recordId
-	cl.ModelName = getModelName(record)
+	cl.ModelName = getModelName(m.model)
 	cl.ModelValue = record
 	_, err = m.logCollection.Upsert(bson.M{"_id": cl.Id}, bson.M{"$set": cl})
 	return err
