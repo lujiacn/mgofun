@@ -266,3 +266,9 @@ func (m *MgoFun) Distinct(key string, i interface{}) error {
 	err := m.findQ().Distinct(key, i)
 	return err
 }
+
+//Hard Delete with Condition, be careful
+func (m *MgoFun) RemoveAll() error {
+	_, err := m.collection.RemoveAll(m.Query)
+	return err
+}
