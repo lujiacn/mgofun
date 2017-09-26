@@ -272,3 +272,14 @@ func (m *MgoFun) RemoveAll() error {
 	_, err := m.collection.RemoveAll(m.Query)
 	return err
 }
+
+//GetWithSelect
+func (m *MgoFun) GetWithSelect(cols []string) error {
+	sCols := bson.M{}
+	for _, v := range cols {
+		sCols[v] = 1
+	}
+	query := m.findByIdQ().Select(sCols)
+	err := query.One(m.model)
+	return err
+}
