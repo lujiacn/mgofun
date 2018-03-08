@@ -5,8 +5,10 @@ import (
 	"reflect"
 	"time"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
+	//"gopkg.in/mgo.v2"
+	//"gopkg.in/mgo.v2/bson"
 )
 
 //MgoFun wrap all common functions
