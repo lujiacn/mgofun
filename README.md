@@ -4,6 +4,15 @@ Wrapped mgo functions
 
 Check the code for details. No validation and using with your own risk.
 
+- version2, using mgo.v2
+```go
+import gopkg.in/lujiacn/mgofun.v2
+```
+- version3, using globalsign/mgo
+```go
+import gopkg.in/lujiacn/mgofun.v3
+```
+
 
 
 > Copyright (c) 2017 Jia Lu <lujiacn@gmail.com>
